@@ -52,28 +52,13 @@ def _env(*nombres, default=None):
     return default
 
 
-def _datos_url():
-    """Lee MYSQL_URL / DATABASE_URL (formato mysql://usuario:clave@host:puerto/base)."""
-    url = _env("MYSQL_URL", "DATABASE_URL", "MYSQL_PUBLIC_URL")
-    if not url:
-        return {}
-    from urllib.parse import urlparse, unquote
-    u = urlparse(url)
-    return {
-        "host": u.hostname, "port": u.port or 3306,
-        "user": unquote(u.username or ""), "password": unquote(u.password or ""),
-        "database": (u.path or "/").lstrip("/"),
-    }
-
-
 def config_mysql():
-    url = _datos_url()
     return {
-        "host": _env("DB_HOST", "MYSQLHOST", default=url.get("host") or "localhost"),
-        "port": int(_env("DB_PORT", "MYSQLPORT", default=str(url.get("port") or 3306))),
-        "user": _env("DB_USER", "MYSQLUSER", default=url.get("user") or "root"),
-        "password": _env("DB_PASSWORD", "MYSQLPASSWORD", default=url.get("password") or ""),
-        "database": _env("DB_NAME", "MYSQLDATABASE", default=url.get("database") or "soadin"),
+        "host": _env("DB_HOST", "MYSQLHOST", default="localhost"),
+        "port": int(_env("DB_PORT", "MYSQLPORT", default="3306")),
+        "user": _env("DB_USER", "MYSQLUSER", default="root"),
+        "password": _env("DB_PASSWORD", "MYSQLPASSWORD", default=""),
+        "database": _env("DB_NAME", "MYSQLDATABASE", default="soadin"),
         "charset": "utf8mb4",
         "init_command": "SET NAMES utf8mb4 COLLATE utf8mb4_general_ci",
         "cursorclass": DictCursor,

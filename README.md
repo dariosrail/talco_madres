@@ -56,16 +56,11 @@ El `.env` con contraseñas **no se sube** (está en `.gitignore`).
 ## Publicar en Railway
 
 1. En Railway: **New Project → Deploy from GitHub repo** y elige el repo.
-2. En **Variables** de la app agrega:
-   - `MYSQL_URL` con el valor `${{MySQL.MYSQL_URL}}` (Railway lo llena solo con la conexión privada de tu servicio MySQL; si tu servicio se llama distinto, cambia `MySQL` por su nombre).
-   - `SECRET_KEY` con una cadena larga y aleatoria.
-   - `EMPRESA_NOMBRE`, `EMPRESA_RFC`, `EMPRESA_DIRECCION`, `EMPRESA_TELEFONO` (y opcional `EMPRESA_LOGO_URL`).
+2. En **Variables** captura las de `.env.example` (`DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `SECRET_KEY`, `EMPRESA_*`).
 3. En **Settings → Networking → Generate Domain** para obtener la URL pública.
 4. Revisa `https://TU-URL/salud`: debe responder `"bd": true`.
 
-Con la app y el MySQL en el mismo proyecto de Railway, la conexión va por la red privada (más rápida y sin costo de salida). La URL pública (`...proxy.rlwy.net`) es la que usa el punto de venta de escritorio desde la tienda.
-
-### Si tu MySQL NO está en Railway
+### ⚠️ La base de datos tiene que ser alcanzable desde internet
 
 Railway corre en la nube. Si tu MySQL está en una PC de la tienda, Railway **no la ve**. Opciones:
 
