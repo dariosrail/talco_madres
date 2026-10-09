@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1e3c72">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Acceso · Punto de venta</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+<div class="login-fondo">
+  <form class="login" method="post" autocomplete="off">
+    {% if empresa.logo %}<img src="{{ empresa.logo }}" alt="">{% endif %}
+    <h1>Punto de venta</h1>
+    <div class="emp">{{ empresa.empresa }}{% if empresa.rfc %} · {{ empresa.rfc }}{% endif %}</div>
+
+    {% if dia %}<div class="dia">Día abierto: <b>{{ dia }}</b></div>{% endif %}
+
+    <label for="caja">Caja</label>
+    <select class="entrada" id="caja" name="caja" required>
+      {% if not cajas %}<option value="">Sin cajas con turno abierto</option>{% endif %}
+      {% for c in cajas %}
+        <option value="{{ c.caja }}" {% if c.caja == caja_guardada %}selected{% endif %}>
+          Caja {{ c.caja }} · Turno {{ c.turno }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label for="codigo">Código de vendedor</label>
+    <input class="entrada grande" id="codigo" name="codigo" inputmode="numeric" placeholder="0001" required autofocus>
+
+    <label for="password">Contraseña</label>
+    <input class="entrada grande" id="password" name="password" type="password" placeholder="••••" required>
+
+    <button class="btn primario" type="submit">Entrar</button>
+    {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  </form>
+</div>
+</body>
+</html>

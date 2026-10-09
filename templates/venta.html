@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1e3c72">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Punto de venta · {{ empresa.empresa }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ================= BARRA SUPERIOR ================= -->
+  <header class="barra">
+    <div>
+      <div class="titulo">PUNTO DE VENTA</div>
+      <div class="sub">{{ empresa.empresa }}</div>
+    </div>
+    <div class="espacio"></div>
+    <div class="dato"><span>VENDEDOR</span><b>{{ vendedor }}</b></div>
+    <div class="dato opc"><span>FECHA</span><b id="t-fecha">{{ turno.fecha }}</b></div>
+    <div class="dato"><span>CAJA</span><b id="t-caja">{{ turno.caja }}</b></div>
+    <div class="dato opc"><span>TURNO</span><b id="t-turno">{{ turno.turno }}</b></div>
+    <div class="dato opc"><span>CAJERO</span><b id="t-cajero">{{ turno.cajero }}</b></div>
+    <div class="hora" id="reloj">--:--</div>
+    <button class="btn-barra" id="bt-salir">Salir</button>
+  </header>
+
+  <main class="cuerpo">
+    <!-- ================= IZQUIERDA ================= -->
+    <section class="col">
+      <div class="panel captura">
+        <div class="fila">
+          <input class="entrada grande" id="tx-codigo" placeholder="Código, 3*código o escanea…"
+                 autocomplete="off" autocapitalize="characters" enterkeyhint="search">
+          <button class="btn primario" id="bt-buscar-codigo">Ir</button>
+          <button class="btn" id="bt-buscar">Catálogo</button>
+        </div>
+
+        <!-- Producto encontrado -->
+        <div class="producto" id="producto">
+          <div class="nombre" id="p-nombre"></div>
+          <div class="meta">
+            <span>Código <b id="p-codigo"></b></span>
+            <span>Unidad <b id="p-unidad"></b></span>
+            <span>Existencia <b id="p-exis"></b></span>
+            <span id="p-eqv-wrap">Equivalentes <b id="p-eqv"></b></span>
+          </div>
+          <div class="precios" id="p-precios"></div>
+          <div class="campos">
+            <div class="campo">
+              <label>Cantidad</label>
+              <div class="paso">
+                <button type="button" id="bt-menos">−</button>
+                <input class="entrada grande num" id="tx-cantidad" inputmode="decimal" enterkeyhint="done">
+                <button type="button" id="bt-mas">+</button>
+              </div>
+            </div>
+            <div class="campo">
+              <label>Precio</label>
+              <input class="entrada grande num" id="tx-precio" inputmode="decimal" readonly>
+            </div>
+            <div class="campo">
+              <label>% Desc.</label>
+              <input class="entrada num" id="tx-pdesc" inputmode="decimal" value="0">
+            </div>
+            <div class="campo">
+              <button class="btn verde" id="bt-agregar" style="height:48px;padding:0 22px">Agregar</button>
+            </div>
+          </div>
+          <div class="fila" style="margin-top:8px; justify-content:space-between; align-items:center">
+            <span class="aviso" id="p-aviso"></span>
+            <span class="herramientas">
+              <button class="btn chico" id="bt-p-eqv">Equivalentes</button>
+              <button class="btn chico" id="bt-p-web">Web</button>
+              <button class="btn chico" id="bt-p-partida">Descripción / SAT</button>
+              <button class="btn chico rojo" id="bt-p-cancelar">Cancelar</button>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel partidas" id="partidas">
+        <div class="partidas-vacio" id="partidas-vacio">Escanea o busca un producto para empezar la venta.</div>
+      </div>
+    </section>
+
+    <!-- ================= DERECHA ================= -->
+    <section class="col">
+      <div class="panel cliente-card">
+        <div class="info">
+          <div class="nom" id="c-nombre">PÚBLICO EN GENERAL</div>
+          <div class="rfc" id="c-rfc">000000</div>
+          <div class="credito" id="c-credito"></div>
+        </div>
+        <button class="btn" id="bt-cliente">Cliente</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-t">Totales</div>
+        <div class="totales">
+          <div class="lin"><span>Piezas</span><b id="tt-piezas">0.000</b></div>
+          <div class="lin"><span>Importe</span><b id="tt-importe">0.00</b></div>
+          <div class="lin"><span>Descuento</span><b id="tt-desc" class="mal">0.00</b></div>
+          <div class="lin"><span>Subtotal</span><b id="tt-sub">0.00</b></div>
+          <div class="lin"><span>I.V.A.</span><b id="tt-iva">0.00</b></div>
+          <div class="total-grande"><span>TOTAL A PAGAR</span><b id="tt-total">$0.00</b></div>
+        </div>
+        <div class="pago-rapido" id="forma-pago">
+          <button class="op sel" data-forma="efectivo">Efectivo</button>
+          <button class="op" data-forma="tarjeta">Tarjeta</button>
+          <button class="op" data-forma="transferencia">Transferencia</button>
+        </div>
+      </div>
+
+      <div class="docs">
+        <button class="doc nota" data-doc="Nota de Venta">Nota de venta<small id="f-NO"></small></button>
+        <button class="doc remision" data-doc="Remision">Remisión<small id="f-RE"></small></button>
+        <button class="doc factura" data-doc="Factura">Factura<small id="f-FA"></small></button>
+        <button class="doc cotizacion" data-doc="Cotizacion">Cotización<small id="f-CO"></small></button>
+      </div>
+
+      <div class="herramientas">
+        <button class="btn" id="bt-limpiar" style="flex:1">Limpiar venta</button>
+        <button class="btn" id="bt-precios" style="flex:1">Consultar precio</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= MODAL: BUSCAR PRODUCTOS ================= -->
+<div class="velo" id="m-buscar">
+  <div class="modal">
+    <div class="modal-t"><h2>Consulta de productos</h2><button class="cerrar" data-cerrar>×</button></div>
+    <div class="modal-c">
+      <div class="fila">
+        <input class="entrada grande" id="b-texto" placeholder="Escribe y busca…" autocomplete="off" enterkeyhint="search">
+        <button class="btn primario" id="b-ir">Buscar</button>
+      </div>
+      <div class="modos" id="b-modos">
+        <button class="chip sel" data-modo="descripcion">Descripción</button>
+        <button class="chip" data-modo="inicial">Inicia con</button>
+        <button class="chip" data-modo="codigo">Código</button>
+        <button class="chip" data-modo="parte">No. parte</button>
+        <button class="chip" data-modo="codprovee">Cód. proveedor</button>
+        <button class="chip" data-modo="presentacion">Presentación</button>
+      </div>
+      <div class="lista" id="b-lista"><div class="vacio">Escribe lo que buscas.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: EQUIVALENTES ================= -->
+<div class="velo" id="m-eqv">
+  <div class="modal mediano">
+    <div class="modal-t"><h2>Equivalentes<span class="sub" id="e-sub"></span></h2><button class="cerrar" data-cerrar>×</button></div>
+    <div class="modal-c"><div class="lista" id="e-lista"></div></div>
+  </div>
+</div>
+
+<!-- ================= MODAL: PARTIDA (descripción / SAT) ================= -->
+<div class="velo" id="m-partida">
+  <div class="modal mediano">
+    <div class="modal-t"><h2>Datos de la partida<span class="sub">Los cambios aplican solo a esta venta</span></h2><button class="cerrar" data-cerrar>×</button></div>
+    <div class="modal-c">
+      <div class="form">
+        <div class="campo full"><label>Descripción en la venta</label>
+          <input class="entrada" id="pt-desc" maxlength="250" {% if not puede_descripcion %}readonly{% endif %}></div>
+        <div class="campo"><label>Unidad</label>
+          <input class="entrada" id="pt-unidad" maxlength="20" placeholder="PZA, SERV…" {% if not puede_descripcion %}readonly{% endif %}></div>
+        <div class="campo"><label>&nbsp;</label>
+          <button class="btn" id="pt-restaurar" style="width:100%" {% if not puede_descripcion %}disabled{% endif %}>Restaurar original</button></div>
+        <div class="campo"><label>Clave SAT (8 dígitos)</label>
+          <input class="entrada num" id="pt-clave" maxlength="8" inputmode="numeric" placeholder="01010101"></div>
+        <div class="campo"><label>Unidad SAT</label>
+          <input class="entrada" id="pt-umesat" maxlength="5" placeholder="H87"></div>
+      </div>
+      {% if not puede_descripcion %}<p class="aviso">Tu usuario no tiene permiso para cambiar la descripción ni la unidad.</p>{% endif %}
+    </div>
+    <div class="modal-p"><button class="btn" data-cerrar>Cancelar</button><button class="btn primario" id="pt-aceptar">Aceptar</button></div>
+  </div>
+</div>
+
+<!-- ================= MODAL: CLIENTE ================= -->
+<div class="velo" id="m-cliente">
+  <div class="modal">
+    <div class="modal-t"><h2>Cliente</h2><button class="cerrar" data-cerrar>×</button></div>
+    <div class="modal-c">
+      <div class="fila">
+        <input class="entrada grande" id="cl-texto" placeholder="Nombre, R.F.C. o código" autocomplete="off" enterkeyhint="search">
+        <button class="btn primario" id="cl-ir">Buscar</button>
+        <button class="btn" id="cl-nuevo">Nuevo</button>
+      </div>
+      <div class="fila" style="margin-top:8px">
+        <button class="btn chico" id="cl-publico">Público en general</button>
+      </div>
+      <div class="lista" id="cl-lista" style="margin-top:10px"><div class="vacio">Busca un cliente.</div></div>
+
+      <div id="cl-nuevo-form" class="oculto" style="margin-top:12px">
+        <div class="panel-t" style="padding:0 0 8px">Nuevo cliente</div>
+        <div class="form">
+          <div class="campo full"><label>Nombre / razón social *</label><input class="entrada" id="n-cliente"></div>
+          <div class="campo"><label>R.F.C.</label><input class="entrada" id="n-rfc" placeholder="XAXX010101000"></div>
+          <div class="campo"><label>Teléfono</label><input class="entrada" id="n-telefono" inputmode="tel"></div>
+          <div class="campo full"><label>Correo</label><input class="entrada" id="n-email" inputmode="email"></div>
+          <div class="campo"><label>Calle</label><input class="entrada" id="n-calle"></div>
+          <div class="campo"><label>Número</label><input class="entrada" id="n-exterior"></div>
+          <div class="campo"><label>Colonia</label><input class="entrada" id="n-colonia"></div>
+          <div class="campo"><label>C.P.</label><input class="entrada" id="n-cp" inputmode="numeric"></div>
+          <div class="campo"><label>Municipio</label><input class="entrada" id="n-municipio"></div>
+          <div class="campo"><label>Estado</label><input class="entrada" id="n-estado"></div>
+        </div>
+        <div class="fila" style="justify-content:flex-end; margin-top:10px">
+          <button class="btn" id="n-cancelar">Cancelar</button>
+          <button class="btn verde" id="n-grabar">Grabar cliente</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: CARTERA ================= -->
+<div class="velo" id="m-cartera">
+  <div class="modal">
+    <div class="modal-t"><h2>Cartera<span class="sub" id="ca-sub"></span></h2><button class="cerrar" data-cerrar>×</button></div>
+    <div class="modal-c">
+      <div class="kpis" id="ca-kpis"></div>
+      <table class="tabla">
+        <thead><tr><th>Documento</th><th>Fecha</th><th>Vence</th><th class="num">Saldo</th><th class="num">Días</th><th>Rango</th></tr></thead>
+        <tbody id="ca-docs"></tbody>
+      </table>
+      <div id="ca-movs" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= MODAL: COBRO ================= -->
+<div class="velo" id="m-cobro">
+  <div class="modal mediano">
+    <div class="modal-t"><h2 id="co-titulo">Cobro</h2><button class="cerrar" data-cerrar>×</button></div>
+    <div class="modal-c">
+      <div class="cobro">
+        <div class="neto"><span>TOTAL</span><b id="co-neto">$0.00</b></div>
+        <div class="campo full" style="grid-column:1/-1">
+          <label>Cliente</label><div id="co-cliente" style="font-weight:700"></div>
+        </div>
+        <div class="campo">
+          <label>Efectivo</label>
+          <input class="entrada grande num" id="co-efectivo" inputmode="decimal">
+          <div class="rapidos" id="co-rapidos"></div>
+        </div>
+        <div class="campo">
+          <label>Cambio</label>
+          <div class="cambio" id="co-cambio">0.00</div>
+        </div>
+        <div class="campo"><label>Tarjeta</label><input class="entrada num" id="co-tarjeta" inputmode="decimal"></div>
+        <div class="campo"><label>Transferencia</label><input class="entrada num" id="co-transferencia" inputmode="decimal"></div>
+        <div class="credito-box" id="co-credito-box">
+          <label class="switch"><input type="checkbox" id="co-credito"> Venta a crédito
+            <span id="co-credito-monto" class="num" style="margin-left:auto"></span></label>
+          <div id="co-credito-info" style="font-size:13px"></div>
+        </div>
+        <div class="campo"><label>Referencia de pago</label><input class="entrada" id="co-ref"></div>
+        <div class="campo"><label>Observaciones</label><input class="entrada" id="co-obs"></div>
+        <label class="switch" style="grid-column:1/-1"><input type="checkbox" id="co-omite" checked> Omitir comprobante (no imprimir si se paga completo)</label>
+      </div>
+    </div>
+    <div class="modal-p"><button class="btn" data-cerrar>Regresar</button><button class="btn verde" id="co-grabar" style="min-width:200px">Grabar</button></div>
+  </div>
+</div>
+
+<!-- ================= MODAL: RESULTADO / TICKET ================= -->
+<div class="velo" id="m-ticket">
+  <div class="modal chico">
+    <div class="modal-t"><h2 id="tk-titulo">Venta grabada</h2></div>
+    <div class="modal-c" style="background:#eef2f6"><div id="tk-vista"></div></div>
+    <div class="modal-p"><button class="btn" id="tk-imprimir">Imprimir</button><button class="btn primario" id="tk-nueva">Nueva venta</button></div>
+  </div>
+</div>
+
+<!-- ================= MODAL: CONFIRMAR ================= -->
+<div class="velo" id="m-confirmar">
+  <div class="modal chico">
+    <div class="modal-t"><h2 id="cf-titulo">Confirmar</h2></div>
+    <div class="modal-c" id="cf-texto" style="font-size:16px; white-space:pre-line"></div>
+    <div class="modal-p"><button class="btn" id="cf-no">No</button><button class="btn primario" id="cf-si">Sí</button></div>
+  </div>
+</div>
+
+<div id="zona-impresion"></div>
+
+<script>
+  window.POS = {
+    puedeDescripcion: {{ 'true' if puede_descripcion else 'false' }},
+    empresa: {{ empresa | tojson }},
+  };
+</script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
